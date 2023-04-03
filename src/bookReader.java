@@ -40,6 +40,7 @@ public class bookReader {
         return (notLetters < word.length());
     }
 
+    // function to generate two random words from the book to be trigramed
     private void generate_random()
     {
         firstIdx = secondIdx = -1;
@@ -86,24 +87,30 @@ public class bookReader {
             myReader.close();
         }
         catch (FileNotFoundException e) {
-            System.out.println("An error occurred.");
+            System.out.println("An error occurred while reading the book");
             e.printStackTrace();
         }
     }
 
     public void trigram()
     {
-        String path = "Result/" + bookName;
         try
         {
+            String path = "Result/" + bookName;
+
+            // creating file
             File createTrigrammedBook = new File(path);
             createTrigrammedBook.createNewFile();
+
+            // opening file to write to it
             FileWriter trigramedBook = new FileWriter(path);
+
             // Everytime randomly choose two words and trigram it
             ArrayList<String> trigrams = new ArrayList<String>();
             generate_random();
             trigrams.add(words.get(firstIdx));
             trigrams.add(words.get(secondIdx));
+
             while (trigrams.size() < bookSize)
             {
                 String trigram = map.get(words.get(words.size() - 2) + words.get(words.size() - 1));
@@ -111,14 +118,16 @@ public class bookReader {
                 {
                     generate_random();
                     trigrams.add(words.get(firstIdx));
-                    trigrams.add(words.get(secondIdx));
+                    // so they be exactly equal in length
+                    if (trigrams.size() < words.size())
+                        trigrams.add(words.get(secondIdx));
                 }
                 else
                 {
                     trigrams.add(trigram);
                 }
             }
-            System.out.println(trigrams.size());
+            // writing trigrams to the trigramed book with 120 letters per line
             StringBuilder line = new StringBuilder();
             for (String i: trigrams)
             {
@@ -134,7 +143,7 @@ public class bookReader {
         }
         catch (IOException e)
         {
-            System.out.println("An error occurred while writing trigram book");
+            System.out.println("An error occurred while writing trigramed book");
             e.printStackTrace();
         }
     }
