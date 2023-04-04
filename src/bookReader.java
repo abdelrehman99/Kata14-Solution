@@ -10,7 +10,7 @@ import java.util.Scanner;
 public class bookReader {
     public String bookName;
     public File book;
-    public HashMap <String ,String> map;
+    public HashMap <String ,ArrayList<String> > map;
     public ArrayList<String> words;
     public int bookSize;
     private int firstIdx, secondIdx;
@@ -21,7 +21,7 @@ public class bookReader {
         // Getting book
         bookName = fileName;
         book = new File("Books/" + fileName);
-        map = new HashMap<String, String>();
+        map = new HashMap<String, ArrayList<String>>();
         words = new ArrayList<>();
     }
 
@@ -43,13 +43,9 @@ public class bookReader {
     // function to generate two random words from the book to be trigramed
     private void generate_random()
     {
-        firstIdx = secondIdx = -1;
         Random rand = new Random();
-        while (firstIdx == secondIdx)
-        {
-            firstIdx = rand.nextInt(words.size());
-            secondIdx = rand.nextInt(words.size());
-        }
+        firstIdx = rand.nextInt(words.size() - 1);
+        secondIdx = firstIdx + 1;
     }
     public void readBook() {
         try {
@@ -57,7 +53,7 @@ public class bookReader {
             Scanner myReader = new Scanner(book);
 
             // getting the first two words
-            while (words.size() < 2)
+            while (words.size() < 2 && myReader.hasNext())
             {
                 String word = myReader.next();
 
@@ -76,7 +72,9 @@ public class bookReader {
                     continue;
 
                 // getting the last two words and combining them
-                map.put(words.get(words.size() - 2) + words.get(words.size() - 1), word);
+                String key = words.get(words.size() - 2) + words.get(words.size() - 1);
+                map.computeIfAbsent(key, k -> new ArrayList<String>());
+                map.get(key).add(word);
                 words.add(word);
 
             }
@@ -107,38 +105,45 @@ public class bookReader {
 
             // Everytime randomly choose two words and trigram it
             ArrayList<String> trigrams = new ArrayList<String>();
-            generate_random();
-            trigrams.add(words.get(firstIdx));
-            trigrams.add(words.get(secondIdx));
-
-            while (trigrams.size() < bookSize)
+            if (words.size() < 2)
+                trigrams = words;
+            else
             {
-                String trigram = map.get(words.get(words.size() - 2) + words.get(words.size() - 1));
-                if (trigram == null)
-                {
-                    generate_random();
-                    trigrams.add(words.get(firstIdx));
-                    // so they be exactly equal in length
-                    if (trigrams.size() < words.size())
-                        trigrams.add(words.get(secondIdx));
-                }
-                else
-                {
-                    trigrams.add(trigram);
-                }
+                generate_random();
+                trigrams.add(words.get(firstIdx));
+                trigrams.add(words.get(secondIdx));
+            }
+
+            while (trigrams.size() < words.size())
+            {
+                // exiting when we can't build anymore
+                if (map.get(trigrams.get(trigrams.size() - 2) + trigrams.get(trigrams.size() - 1)) == null)
+                    break;
+
+                Random rand = new Random();
+
+                // getting a random value of the arraylist
+                ArrayList <String> trigram = new ArrayList<>(map.get(trigrams.get(trigrams.size() - 2) + trigrams.get(trigrams.size() - 1)));
+                String result = trigram.get(rand.nextInt(trigram.size()));
+
+                trigrams.add(result);
             }
             // writing trigrams to the trigramed book with 120 letters per line
             StringBuilder line = new StringBuilder();
             for (String i: trigrams)
             {
                 i += " ";
+
+                // making sure that the line fits.
                 if (line.length() + i.length() > charsPerLine)
                 {
                     trigramedBook.write(line + "\n");
                     line = new StringBuilder();
                 }
+
                 line.append(i);
             }
+            trigramedBook.write(line + "\n");
             trigramedBook.close();
         }
         catch (IOException e)

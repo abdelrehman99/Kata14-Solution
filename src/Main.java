@@ -15,7 +15,14 @@ public class Main {
                 System.out.println("Type " + (i + 1) + " to trigram " + options[i]);
             }
             System.out.println("Type 0 to exit the program");
-            option = input.nextInt();
+            option = -1;
+            if (input.hasNextInt())
+                option = input.nextInt();
+            else
+            {
+                String temp;
+                temp = input.next();
+            }
             if (option > options.length || option < 0)
             {
                 System.out.println("Invalid input please try again");
